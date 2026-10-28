@@ -1,0 +1,91 @@
+retriever,id,type,rank,confident,top_source,top_score
+keyword (BM25),q01,literal,1,True,returns_policy.md,17.726
+keyword (BM25),q02,literal,2,True,refund_approval.md,8.307
+keyword (BM25),q03,literal,1,True,damaged_stock.md,9.885
+keyword (BM25),q04,literal,1,True,supplier_claims.md,16.714
+keyword (BM25),q05,literal,1,True,promotions.md,13.56
+keyword (BM25),q06,literal,1,True,cash_handling.md,9.716
+keyword (BM25),q07,literal,1,True,cold_chain.md,4.164
+keyword (BM25),q08,literal,2,False,inter_branch_transfer.md,2.543
+keyword (BM25),q09,literal,1,True,purchase_orders.md,20.697
+keyword (BM25),q10,literal,1,True,loyalty_card.md,16.528
+keyword (BM25),q11,literal,1,True,leave_requests.md,13.254
+keyword (BM25),q12,literal,1,True,bakery_production.md,9.911
+keyword (BM25),q13,paraphrase,,False,customer_complaints.md,3.999
+keyword (BM25),q14,paraphrase,1,True,refund_approval.md,5.574
+keyword (BM25),q15,paraphrase,,False,expiry_management.md,3.36
+keyword (BM25),q16,paraphrase,1,True,promotions.md,8.715
+keyword (BM25),q17,paraphrase,3,True,stock_count.md,4.164
+keyword (BM25),q18,paraphrase,,True,damaged_stock.md,6.801
+keyword (BM25),q19,paraphrase,1,True,cold_chain.md,5.049
+keyword (BM25),q20,paraphrase,1,False,expiry_management.md,3.488
+keyword (BM25),q21,paraphrase,,False,inter_branch_transfer.md,3.478
+keyword (BM25),q22,paraphrase,,False,opening_closing.md,3.596
+keyword (BM25),q23,paraphrase,,True,waste_disposal.md,4.943
+keyword (BM25),q24,paraphrase,1,True,staff_discount.md,4.006
+keyword (BM25),q25,paraphrase,1,True,fresh_produce.md,9.04
+keyword (BM25),q26,unanswerable,,True,leave_requests.md,4.927
+keyword (BM25),q27,unanswerable,,False,purchase_orders.md,3.625
+keyword (BM25),q28,unanswerable,,True,uniform_grooming.md,4.52
+keyword (BM25),q29,unanswerable,,True,promotions.md,4.52
+keyword (BM25),q30,unanswerable,,True,uniform_grooming.md,4.52
+embeddings (spacy-word-vectors),q01,literal,1,True,returns_policy.md,0.911
+embeddings (spacy-word-vectors),q02,literal,3,True,refund_approval.md,0.752
+embeddings (spacy-word-vectors),q03,literal,1,True,damaged_stock.md,0.81
+embeddings (spacy-word-vectors),q04,literal,1,True,supplier_claims.md,0.975
+embeddings (spacy-word-vectors),q05,literal,1,True,promotions.md,0.882
+embeddings (spacy-word-vectors),q06,literal,1,True,cash_handling.md,0.884
+embeddings (spacy-word-vectors),q07,literal,2,True,health_safety.md,0.637
+embeddings (spacy-word-vectors),q08,literal,3,True,inter_branch_transfer.md,0.692
+embeddings (spacy-word-vectors),q09,literal,1,True,purchase_orders.md,0.947
+embeddings (spacy-word-vectors),q10,literal,1,True,loyalty_card.md,0.859
+embeddings (spacy-word-vectors),q11,literal,,True,expiry_management.md,0.825
+embeddings (spacy-word-vectors),q12,literal,1,True,bakery_production.md,0.932
+embeddings (spacy-word-vectors),q13,paraphrase,4,True,bakery_production.md,0.793
+embeddings (spacy-word-vectors),q14,paraphrase,3,True,returns_policy.md,0.86
+embeddings (spacy-word-vectors),q15,paraphrase,,True,health_safety.md,0.695
+embeddings (spacy-word-vectors),q16,paraphrase,1,True,promotions.md,0.769
+embeddings (spacy-word-vectors),q17,paraphrase,8,True,health_safety.md,0.691
+embeddings (spacy-word-vectors),q18,paraphrase,,True,fresh_produce.md,0.791
+embeddings (spacy-word-vectors),q19,paraphrase,6,True,bakery_production.md,0.698
+embeddings (spacy-word-vectors),q20,paraphrase,6,True,returns_policy.md,0.651
+embeddings (spacy-word-vectors),q21,paraphrase,,True,returns_policy.md,0.743
+embeddings (spacy-word-vectors),q22,paraphrase,,True,cash_handling.md,0.667
+embeddings (spacy-word-vectors),q23,paraphrase,8,True,cold_chain.md,0.653
+embeddings (spacy-word-vectors),q24,paraphrase,2,True,expiry_management.md,0.715
+embeddings (spacy-word-vectors),q25,paraphrase,3,True,bakery_production.md,0.751
+embeddings (spacy-word-vectors),q26,unanswerable,,True,leave_requests.md,0.754
+embeddings (spacy-word-vectors),q27,unanswerable,,False,fire_emergency.md,0.505
+embeddings (spacy-word-vectors),q28,unanswerable,,True,stock_count.md,0.824
+embeddings (spacy-word-vectors),q29,unanswerable,,True,purchase_orders.md,0.7
+embeddings (spacy-word-vectors),q30,unanswerable,,True,purchase_orders.md,0.875
+"hybrid (BM25 + embeddings, RRF)",q01,literal,1,True,returns_policy.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q02,literal,2,True,refund_approval.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q03,literal,1,True,damaged_stock.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q04,literal,1,True,supplier_claims.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q05,literal,1,True,promotions.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q06,literal,1,True,cash_handling.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q07,literal,1,True,cold_chain.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q08,literal,2,True,inter_branch_transfer.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q09,literal,1,True,purchase_orders.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q10,literal,1,True,loyalty_card.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q11,literal,1,True,leave_requests.md,0.03
+"hybrid (BM25 + embeddings, RRF)",q12,literal,1,True,bakery_production.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q13,paraphrase,,True,bakery_production.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q14,paraphrase,1,True,refund_approval.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q15,paraphrase,,True,uniform_grooming.md,0.031
+"hybrid (BM25 + embeddings, RRF)",q16,paraphrase,1,True,promotions.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q17,paraphrase,2,True,till_shortage.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q18,paraphrase,,True,expiry_management.md,0.031
+"hybrid (BM25 + embeddings, RRF)",q19,paraphrase,1,True,cold_chain.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q20,paraphrase,1,True,expiry_management.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q21,paraphrase,,True,supplier_claims.md,0.03
+"hybrid (BM25 + embeddings, RRF)",q22,paraphrase,,True,shrinkage.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q23,paraphrase,,True,cold_chain.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q24,paraphrase,1,True,staff_discount.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q25,paraphrase,1,True,fresh_produce.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q26,unanswerable,,True,leave_requests.md,0.033
+"hybrid (BM25 + embeddings, RRF)",q27,unanswerable,,False,price_override.md,0.03
+"hybrid (BM25 + embeddings, RRF)",q28,unanswerable,,True,stock_count.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q29,unanswerable,,True,supplier_claims.md,0.032
+"hybrid (BM25 + embeddings, RRF)",q30,unanswerable,,True,supplier_claims.md,0.027
