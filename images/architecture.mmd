@@ -1,0 +1,23 @@
+flowchart TD
+    Q([Question]) --> R{Router<br/>rules first,<br/>model only if unsure}
+    R -->|out_of_scope| O[Polite refusal<br/>0 model calls]
+    R -->|rag| RAG[RAG over 26 SOPs<br/>BM25 / embeddings / hybrid]
+    R -->|agent| AG[Stock agent<br/>8 read-only tools]
+    R -->|briefing| BR{Briefing mode}
+    RAG --> RF{Confident and<br/>not NOT_FOUND?}
+    RF -->|no| REF[I couldn't find this]
+    RF -->|yes| ANS1[Answer + citations]
+    AG --> DB[(store.db<br/>read-only + authorizer)]
+    AG --> LOG[[logs/tool_calls.jsonl]]
+    AG --> ANS2[Answer with numbers]
+    BR -->|template| T[Code fills template<br/>0 model calls]
+    BR -->|single| S[One agent]
+    BR -->|team| TEAM[Stock / Orders / Sales / SOP<br/>specialists in parallel]
+    TEAM --> REV[Reviewer<br/>FACTS = source of truth]
+    FACTS[(Facts gathered by code)] --> T
+    FACTS --> REV
+    T --> FC{Fact-checker<br/>+ coverage}
+    S --> FC
+    REV --> FC
+    FC --> ANS3[Briefing + warnings]
+    ANS1 & ANS2 & ANS3 & O & REF --> RC[/Receipt: route, calls, tokens, $, seconds/]
