@@ -12,8 +12,8 @@ It's the capstone from my Medium article **[LLM, RAG, AI Agent or Agentic AI? Cl
 |---|---|---|
 | **M1 · ask-my-sop** | RAG over 26 SOPs, a 30-question eval set, keyword vs embeddings vs hybrid search | ✅ done |
 | **M2 · stock-agent** | SQLite stock / sales / PO data, 8 read-only tools, logged tool calls, 10-scenario agent eval | ✅ done |
-| M3 · router | Sends each question to the cheapest rung, with a cost report | ⏳ next |
-| M4 · morning briefing | Planner → specialist agents → reviewer write a daily branch report | planned |
+| **M3 · router** | Rules-first router with an LLM fallback, a 55-question routing eval, cost per answer | ✅ done |
+| M4 · morning briefing | Planner → specialist agents → reviewer write a daily branch report | ⏳ next |
 | M5 · app | Streamlit UI, architecture diagram, final write-up | planned |
 
 ---
@@ -55,7 +55,7 @@ Retriever settings: top-3, BM25 confidence threshold 4.0, cosine threshold 0.55 
 1. **Keyword search is perfect on literal questions and weak on paraphrases (100% → 54%).** "Loaf of bread" never finds "bakery". This is the classic RAG failure from the article, now measured.
 2. **Cheap embeddings are not magic.** Averaged word vectors did *worse* than BM25 (60% vs 76% hit@3). Averaging blurs a sentence into "generic retail text", so many paragraphs look similar.
 3. **Hybrid search kept BM25's accuracy and removed every false refusal (6 → 0).** Fusing two rankings is cheap insurance.
-4. **Score thresholds can't spot "no answer".** Only 1 of 5 unanswerable questions was refused by any retriever: their top scores overlap with hard paraphrases. Refusing reliably needs a second check — the model must also be allowed to say "I don't know" (already in `rag.py`'s prompt), and M3 will add an explicit relevance check.
+4. **Score thresholds can't spot "no answer".** Only 1 of 5 unanswerable questions was refused by any retriever: their top scores overlap with hard paraphrases. Refusing reliably needs a second check — the model must also be allowed to say "I don't know" (already in `rag.py`'s prompt), and M3 added an explicit `NOT_FOUND` check (see below).
 
 **Next experiment:** run the same eval with a real sentence-embedding model:
 
@@ -164,12 +164,88 @@ The generated data has a few planted situations for the agent to find. At Kitwe,
 python make_data.py                      # optional: store.db is already committed
 python agent_cli.py --trace "Which items will run out at Kitwe in the next 3 days?"
 python -m eval.run_agent_eval            # scores your model on the 10 scenarios
-pytest -q                                # 26 offline tests (M1 + M2)
+pytest -q                                # all offline tests
 ```
 
 Tool calling needs a model that supports it, e.g. `llama3.1:8b` or `qwen2.5:7b` in Ollama.
 
 **Agent eval results:** not measured yet. My build environment has no access to a model server, so the logic is covered by offline tests with a scripted fake model. Run `python -m eval.run_agent_eval` with your model, and the table in `eval/agent_results.md` will show passes, tools used, steps and tokens.
+
+---
+
+## Milestone 3 — router
+
+M1 can read SOPs. M2 can count stock. Now every question has to pick a door — and the expensive door shouldn't be the default.
+
+> Sending a whole agent loop to answer *"what's the return policy?"* is like booking a wedding band for a birthday candle.
+
+### Four doors
+
+| Route | For | Cost |
+|---|---|---|
+| `rag` | Policies and procedures | 1 model call |
+| `agent` | Anything that needs store numbers (and requests to change data, which the read-only agent declines) | several calls |
+| `briefing` | Multi-part branch reports | most calls (M4 turns this into an agent team) |
+| `out_of_scope` | Weather, football, poems, IT | **0 calls** |
+
+### A cascade: free rules first, a model only when unsure
+
+`copilot/router.py` has three routers:
+
+- **`RuleRouter`** uses regexes, branch names from the database and the SOP retriever. It costs nothing and is instant, and it **reports how sure it is**. Mixed or missing signals mean "unsure".
+- **`LLMRouter`** makes one model call that must return `{"route": ..., "reason": ...}`. Invalid JSON, an unknown route or a dead server fall back safely instead of crashing.
+- **`CascadeRouter`** runs the rules first and calls the model only for the questions the rules are unsure about. If the model is down, it keeps the rules' best guess.
+
+### Results (measured, offline)
+
+55 labelled questions: 30 policy, 15 data, 5 briefing, 5 out-of-scope. I labelled them **before** writing the rules and didn't tune the rules on them afterwards. They are still my own questions, though, so treat this as a sanity check, not a benchmark.
+
+| Metric | Rule router |
+|---|---|
+| Accuracy, all questions | 48/55 = 87% |
+| Confident decisions (no model call needed) | 44/55 = 80% |
+| Accuracy when confident | 42/44 = **95%** |
+| Router model calls | 0 |
+
+The rules settle 4 out of 5 questions for free and are right 95% of the time when they're sure. The other 11 go to the model in cascade mode. Full confusion matrix and every mistake: [`eval/router_results_rules.md`](eval/router_results_rules.md).
+
+The mistakes are instructive. *"How often is a full **stock** take done?"* looks like a data question but is a policy question. *"How do I reset the Wi-Fi password?"* has policy wording but is out of scope. Keywords can't see intent, which is why the rules have to be able to say "I'm not sure".
+
+### Refusing better: `NOT_FOUND`
+
+M1 showed that retrieval scores can't tell "no answer" from "hard paraphrase". `rag.py` now has two checks:
+
+1. Retrieval isn't confident → refuse **before** calling the model.
+2. The model must reply `NOT_FOUND` when the context doesn't answer the question → the code turns that into a refusal. It's the same single call, so there's no extra cost.
+
+### Every answer comes with a receipt
+
+`copilot.ask()` returns the route, why it was chosen, the answer and its sources, and the cost: model calls, tokens, seconds, and dollars if you set `PRICE_INPUT_PER_MTOK` / `PRICE_OUTPUT_PER_MTOK` (it defaults to $0 for local models).
+
+```
+$ python copilot_cli.py "Write me a poem about Mondays."
+[route: out_of_scope | by rules | no store-related signals; LLM unavailable]
+
+I can help with store policies, stock, sales and purchase orders. That question is outside what I know about.
+
+[cost: 0 model calls, 0 tokens, $0.0000, 2.58s]
+```
+
+*(That run happened with no model server at all. The cascade fell back to the rules and the copilot still answered sensibly.)*
+
+### Run it
+
+```bash
+python copilot_cli.py "Can a customer return bread they bought yesterday?"
+python copilot_cli.py "Which items will run out at Kitwe within the next 3 days?"
+python copilot_cli.py --route agent "Who must approve refunds above 500 kwacha?"   # force a rung to compare
+
+python -m eval.run_router_eval                    # rules only, offline
+ROUTER=cascade python -m eval.run_router_eval     # rules + model for unsure cases
+python -m eval.run_cost_report                    # routed vs always-agent: calls, tokens, $, seconds
+```
+
+**Not measured yet:** the cascade and LLM router accuracy, and the routed-vs-always-agent cost table. Both need a model server, which my build environment can't reach. Run the commands above and the results land in `eval/`.
 
 ## License
 
