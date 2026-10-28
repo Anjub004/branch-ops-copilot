@@ -27,7 +27,7 @@ Before tuning any prompt, M1 measures **retrieval** — because if the right par
 ### What's inside
 
 ```
-data/sops/            26 fictional retail SOPs (returns, refunds, cold chain, cash handling, …) → 86 paragraphs
+sops/                 26 fictional retail SOPs (returns, refunds, cold chain, cash handling, …) → 86 paragraphs
 eval/questions.jsonl  30 questions: 12 literal, 13 paraphrased, 5 with no answer in the docs
 eval/run_eval.py      Runs every retriever, writes eval/results.md and eval/results_detail.csv
 copilot/chunking.py   One paragraph = one chunk, with the document title attached for context
