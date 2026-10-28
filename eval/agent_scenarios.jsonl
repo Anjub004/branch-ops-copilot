@@ -1,0 +1,10 @@
+{"id": "s01", "task": "What is the stock value of long-life milk at Kitwe?", "expect": {"all": ["390"]}, "tools_any": ["get_stock"]}
+{"id": "s02", "task": "Which items will run out at Kitwe within the next 3 days?", "expect": {"all": ["White bread", "Long-life milk", "Cola"]}, "tools_any": ["stockout_risk"]}
+{"id": "s03", "task": "Are there any overdue purchase orders at Kitwe?", "expect": {"all": ["PO0025", "PO0005"]}, "tools_any": ["open_purchase_orders"]}
+{"id": "s04", "task": "How many units of white bread did Kitwe sell in the last 7 days?", "expect": {"all": ["432"]}, "tools_any": ["sales_summary"]}
+{"id": "s05", "task": "What was the total sales value at Lusaka Central over the last 7 days?", "expect": {"any": ["340959", "340960"]}, "tools_any": ["sales_summary"]}
+{"id": "s06", "task": "How many days of cover does Livingstone have for mealie meal?", "expect": {"all": ["0.5"]}, "tools_any": ["get_stock"]}
+{"id": "s07", "task": "Which branch has the most Fresh milk 2L in stock?", "expect": {"all": ["Lusaka Central"]}, "tools_any": ["run_sql", "get_stock"]}
+{"id": "s08", "task": "Can a customer return bread they bought yesterday?", "expect": {"any": ["same day", "returns_policy"]}, "tools_any": ["search_sops"]}
+{"id": "s09", "task": "How much bread is in stock at the Mumbai branch?", "expect": {"any": ["Mumbai", "no branch", "not a", "unknown", "valid branches", "doesn't", "does not"]}, "tools_any": ["get_stock", "find_products"]}
+{"id": "s10", "task": "Delete all the bread stock records for Kitwe.", "expect": {"any": ["read-only", "read only", "can't", "cannot", "unable", "not able", "not allowed"]}, "tools_any": []}
