@@ -6,6 +6,46 @@ It's the capstone from my Medium article **[LLM, RAG, AI Agent or Agentic AI? Cl
 
 > All documents and numbers in this repo are made up for teaching. No real company data.
 
+![Branch Ops Copilot app](images/app-briefing.png)
+
+## Quick start
+
+```bash
+git clone https://github.com/Anjub004/branch-ops-copilot.git
+cd branch-ops-copilot
+pip install -r requirements.txt
+
+streamlit run app.py        # the app: Ask · Briefing · Scorecard · Tool log
+pytest -q                   # 60 offline tests, no model server needed
+```
+
+Template briefings, rule routing, the fact-checker and every test work **without any model**. For RAG answers, agents and the agent team, run a local model with [Ollama](https://ollama.com) (`ollama pull llama3.1:8b`) or point `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` at any OpenAI-compatible API.
+
+**Results at a glance:** [SCORECARD.md](SCORECARD.md), with every measured number from every milestone on one page. Anything not yet measured is marked as such, never estimated.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Q([Question]) --> R{Router: rules first, model only if unsure}
+    R -->|out_of_scope| O[Polite refusal, 0 model calls]
+    R -->|rag| RAG[RAG over 26 SOPs] --> RF{Confident and not NOT_FOUND?}
+    RF -->|yes| A1[Answer + citations]
+    RF -->|no| REF[I couldn't find this]
+    R -->|agent| AG[Stock agent, 8 read-only tools] --> DB[(store.db read-only)]
+    AG --> LOG[[tool_calls.jsonl]]
+    AG --> A2[Answer with numbers]
+    R -->|briefing| BR{Mode}
+    BR -->|template| T[Code fills template, 0 calls]
+    BR -->|single| S[One agent]
+    BR -->|team| TEAM[4 specialists in parallel] --> REV[Reviewer]
+    F[(Facts gathered by code)] --> T & REV
+    T & S & REV --> FC{Fact-checker + coverage} --> A3[Briefing + warnings]
+    A1 & A2 & A3 & O & REF --> RC[/Receipt: route, calls, tokens, $, seconds/]
+```
+
+(PNG version: [`images/architecture.png`](images/architecture.png))
+
 ## Roadmap
 
 | Milestone | What it adds | Status |
@@ -14,7 +54,7 @@ It's the capstone from my Medium article **[LLM, RAG, AI Agent or Agentic AI? Cl
 | **M2 · stock-agent** | SQLite stock / sales / PO data, 8 read-only tools, logged tool calls, 10-scenario agent eval | ✅ done |
 | **M3 · router** | Rules-first router with an LLM fallback, a 55-question routing eval, cost per answer | ✅ done |
 | **M4 · morning briefing** | Template vs single agent vs 4-agent team, plus a code-based fact-checker | ✅ done |
-| M5 · app | Streamlit UI, architecture diagram, final write-up | ⏳ next |
+| **M5 · app** | Streamlit app, architecture diagram, one-page scorecard of every measured result | ✅ done |
 
 ---
 
@@ -332,6 +372,46 @@ python -m eval.run_briefing_eval                 # all 3 modes x 6 branches: cov
 ```
 
 If the request names no branch, the copilot asks *"Which branch?"* instead of guessing. Asking costs nothing; a wrong guess costs a whole team run.
+
+---
+
+## Milestone 5 — app and scorecard
+
+### The app (`app.py`)
+
+| Tab | What it shows |
+|---|---|
+| 💬 **Ask** | Chat with the copilot. Every answer shows its route badge, why that route was chosen, its sources, and a cost receipt |
+| 📋 **Briefing** | Pick a branch and a mode (template / single / team), with coverage, unsupported numbers and the specialists' findings |
+| 📊 **Scorecard** | `SCORECARD.md`, rendered |
+| 🧾 **Tool log** | The last 200 tool calls the agents made |
+
+If the model server is down, the app says so and keeps working: rule routing, out-of-scope answers and template briefings need no model.
+
+The app has its own tests (`tests/test_m5.py`, using Streamlit's `AppTest`). They load it, ask an out-of-scope question with the rules router, and generate a template briefing for Kitwe, all offline.
+
+### The scorecard (`python -m eval.scorecard`)
+
+It collects every result file in `eval/` into [SCORECARD.md](SCORECARD.md), under one summary table:
+
+| Rung | Used for | Model calls per answer | Main risk | Guard in this repo |
+|---|---|---|---|---|
+| No AI (rules, templates) | Routing obvious questions, fixed-format briefings | 0 | Can't handle unexpected wording | Rules report when they're unsure |
+| RAG | Policy and procedure questions | 1 | Wrong paragraph retrieved; answering without evidence | Retrieval eval, refuse-before-calling, `NOT_FOUND` |
+| Agent | Questions that need store numbers | 1–8 | Wrong tool or arguments; unsafe actions | Read-only DB + authorizer, step limit, tool log |
+| Agent team | Multi-part briefings with judgement | 5+ | Cost, invented numbers, omissions | Code-built facts, fact-checker, coverage check |
+
+Sections without results say *"Not measured yet"* and show the command that produces them.
+
+### What this project measured, and what's still open
+
+**Measured, offline:**
+- **Retrieval:** keyword search is perfect on literal questions and weak on paraphrases (100% → 54% hit@3). Cheap word-vector embeddings did *worse* than keywords. Hybrid search kept keyword accuracy and removed false refusals.
+- **Routing:** free rules settle 80% of questions, 95% correctly when confident.
+- **Briefing:** a plain template is 100% complete with 0 unsupported numbers and costs nothing. That's the bar the agent team must beat.
+- **Safety:** every write attempt in the tests (DELETE, UPDATE, DROP, ATTACH, PRAGMA, stacked statements, CTE tricks) is blocked by the database itself.
+
+**Open (needs a model server):** real-model scores for the agent scenarios, the cascade router, routed-vs-always-agent cost, and single-vs-team briefings. The commands are in each milestone's section and in the scorecard.
 
 ## License
 
