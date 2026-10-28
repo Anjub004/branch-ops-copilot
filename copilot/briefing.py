@@ -55,8 +55,8 @@ def template_briefing(facts):
     lines += [f"- {o['po_id']}: {o['qty']} × {o['name']}, expected {o['expected_date']}"
               for o in f["overdue_orders"]] or ["- None."]
     trend = "n/a" if f["sales_change_pct"] is None else f"{f['sales_change_pct']:+g}% vs previous 7 days"
-    lines += ["", f"**Sales, last 7 days:** K{f['sales_7d_total']:,.2f} ({trend})",
-              "Top sellers: " + ", ".join(f"{p['name']} (K{p['value']:,.2f})" for p in f["top_products_7d"])]
+    lines += ["", f"**Sales, last 7 days:** K{f['sales_7d_total']:,.2f} ({trend})", "",
+              "**Top sellers:** " + ", ".join(f"{p['name']} (K{p['value']:,.2f})" for p in f["top_products_7d"])]
     return "\n".join(lines)
 
 
