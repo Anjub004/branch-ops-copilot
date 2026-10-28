@@ -15,7 +15,7 @@ class Chunk:
         return f"{self.title}. {self.text}"
 
 
-def load_chunks(folder="data/sops"):
+def load_chunks(folder="sops"):
     chunks = []
     for path in sorted(Path(folder).glob("*.md")):
         title, paragraphs = path.stem, []
