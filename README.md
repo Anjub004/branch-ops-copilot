@@ -13,8 +13,8 @@ It's the capstone from my Medium article **[LLM, RAG, AI Agent or Agentic AI? Cl
 | **M1 · ask-my-sop** | RAG over 26 SOPs, a 30-question eval set, keyword vs embeddings vs hybrid search | ✅ done |
 | **M2 · stock-agent** | SQLite stock / sales / PO data, 8 read-only tools, logged tool calls, 10-scenario agent eval | ✅ done |
 | **M3 · router** | Rules-first router with an LLM fallback, a 55-question routing eval, cost per answer | ✅ done |
-| M4 · morning briefing | Planner → specialist agents → reviewer write a daily branch report | ⏳ next |
-| M5 · app | Streamlit UI, architecture diagram, final write-up | planned |
+| **M4 · morning briefing** | Template vs single agent vs 4-agent team, plus a code-based fact-checker | ✅ done |
+| M5 · app | Streamlit UI, architecture diagram, final write-up | ⏳ next |
 
 ---
 
@@ -185,7 +185,7 @@ M1 can read SOPs. M2 can count stock. Now every question has to pick a door — 
 |---|---|---|
 | `rag` | Policies and procedures | 1 model call |
 | `agent` | Anything that needs store numbers (and requests to change data, which the read-only agent declines) | several calls |
-| `briefing` | Multi-part branch reports | most calls (M4 turns this into an agent team) |
+| `briefing` | Multi-part branch reports | 0 calls (template) to 5 calls (team) — see M4 |
 | `out_of_scope` | Weather, football, poems, IT | **0 calls** |
 
 ### A cascade: free rules first, a model only when unsure
@@ -246,6 +246,92 @@ python -m eval.run_cost_report                    # routed vs always-agent: call
 ```
 
 **Not measured yet:** the cascade and LLM router accuracy, and the routed-vs-always-agent cost table. Both need a model server, which my build environment can't reach. Run the commands above and the results land in `eval/`.
+
+---
+
+## Milestone 4 — morning briefing
+
+> *"Morning briefing for Kitwe."*
+
+This is the request agentic AI is supposed to shine at. Several independent parts (stock, orders, sales, procedures), each a job for a specialist, combined by a reviewer.
+
+So M4 builds the agent team, and then tests whether we needed it, by building the same briefing **three ways** from the same facts.
+
+### Three modes
+
+| Mode | How | Model calls |
+|---|---|---|
+| `template` | **No AI.** Code gathers the facts and fills a fixed markdown template | **0** |
+| `single` | One agent with all 8 tools writes the briefing | 1 + tool rounds |
+| `team` | 4 specialists run **in parallel** with their own tools (stock, orders, sales, SOPs), then a reviewer writes the briefing | 5 + tool rounds |
+
+The team, in `copilot/briefing.py`:
+
+- **Stock specialist:** `stockout_risk`, `get_stock`, `find_products`, `calculate`
+- **Purchasing specialist:** `open_purchase_orders`, `get_stock`
+- **Sales specialist:** `sales_summary`, `calculate`
+- **SOP specialist:** `search_sops`. It is told today's problems ("White bread nearly out of stock; PO0025 overdue") and finds the procedures staff must follow.
+- **Reviewer:** gets a **FACTS block** computed by code (the source of truth) plus all the findings. It must use FACTS numbers when they disagree and may not add anything.
+
+Each specialist only gets the tools for its job, enforced by the agent's tool allow-list. The specialists run on a thread pool because none of them depends on another.
+
+### A fact-checker that trusts nobody
+
+Every briefing, in every mode, goes through `verify()`. It pulls every number out of the text and checks it can be traced to the facts gathered by code. Anything that can't be traced is flagged:
+
+```
+Kitwe sold K1,234,567 this week.
+
+⚠️ Fact-check: these numbers could not be traced to store data: 1,234,567
+```
+
+A second metric, **coverage**, checks that every must-mention item (each at-risk product and each overdue PO) actually appears in the briefing. A briefing that's accurate but leaves out the overdue milk order isn't a good briefing.
+
+The checker is plain code: no model, no cost, and it can't be talked out of its job.
+
+### Story in the data
+
+A real template briefing for Kitwe, generated with 0 model calls:
+
+```
+**Morning briefing — Kitwe (2026-10-27)**
+
+**Stock at risk (under 3 days of cover):**
+- White bread 700g (2001): 0 on hand, 0.0 days of cover
+- Long-life milk 1L (1001): 12 on hand, 0.3 days of cover
+- Cola 2L (5002): 63 on hand, 1.9 days of cover
+
+**Overdue purchase orders:**
+- PO0005: 242 × Cola 2L, expected 2026-10-17
+- PO0025: 300 × Long-life milk 1L, expected 2026-10-24
+
+**Sales, last 7 days:** K212,151.00 (-1.7% vs previous 7 days)
+```
+
+### Results so far (measured, offline)
+
+| Mode | Branches | Avg coverage | Unsupported numbers | Avg model calls |
+|---|---|---|---|---|
+| template | 6 | 100% | 0 | 0 |
+| single | not measured yet | | | |
+| team | not measured yet | | | |
+
+The template baseline sets the bar. For a *fixed-format* daily report, plain code is already complete, accurate and free. The team has to earn its 5+ calls with something the template can't do: judgement ("the milk order is overdue *and* stock lasts 7 hours, so call the supplier first") and the SOP specialist's procedures. Whether it does that without inventing numbers is exactly what `eval/run_briefing_eval.py` measures.
+
+This is the article's lesson in one table: **if you can draw the steps as a fixed flowchart, you may not need an agent at all.**
+
+### Run it
+
+```bash
+python briefing_cli.py Kitwe --mode template     # free, instant
+python briefing_cli.py Kitwe --mode single
+python briefing_cli.py Kitwe                     # team (default)
+python copilot_cli.py "Morning briefing for Ndola"   # routed automatically; BRIEFING_MODE=template|single|team
+
+python -m eval.run_briefing_eval                 # all 3 modes x 6 branches: coverage, unsupported numbers, cost
+```
+
+If the request names no branch, the copilot asks *"Which branch?"* instead of guessing. Asking costs nothing; a wrong guess costs a whole team run.
 
 ## License
 
