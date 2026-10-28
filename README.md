@@ -11,8 +11,8 @@ It's the capstone from my Medium article **[LLM, RAG, AI Agent or Agentic AI? Cl
 | Milestone | What it adds | Status |
 |---|---|---|
 | **M1 · ask-my-sop** | RAG over 26 SOPs, a 30-question eval set, keyword vs embeddings vs hybrid search | ✅ done |
-| M2 · stock-agent | SQLite stock / sales / PO data, read-only tools, logged tool calls | ⏳ next |
-| M3 · router | Sends each question to the cheapest rung, with a cost report | planned |
+| **M2 · stock-agent** | SQLite stock / sales / PO data, 8 read-only tools, logged tool calls, 10-scenario agent eval | ✅ done |
+| M3 · router | Sends each question to the cheapest rung, with a cost report | ⏳ next |
 | M4 · morning briefing | Planner → specialist agents → reviewer write a daily branch report | planned |
 | M5 · app | Streamlit UI, architecture diagram, final write-up | planned |
 
@@ -94,6 +94,82 @@ Environment variables: `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (chat), `EMBED
 - **Refuse before calling the model** when retrieval isn't confident — no tokens spent on a guess.
 - **Reciprocal Rank Fusion** combines rankings without having to compare BM25 scores with cosine similarities.
 - **The eval set includes questions with no answer.** A system that never says "I don't know" will look great until it meets a real user.
+
+---
+
+## Milestone 2 — stock-agent
+
+RAG can *read* about bread. M2 lets the copilot *count* it.
+
+> *"Which items will run out at Kitwe in the next 3 days, and is anything already on order?"*
+
+Answering that needs a stock lookup, sales history, a calculation and the purchase-order list — in an order nobody can fix in advance. That's the job of an **agent**: the model chooses the tools, our code runs them.
+
+### What's inside
+
+```
+make_data.py          Builds store.db: 6 fictional branches, 27 products, 28 days of sales, stock, purchase orders
+store.db              The generated database (deterministic, seed 42) — committed so you can start immediately
+copilot/tools.py      8 read-only tools + a tiny registry that builds JSON schemas from function signatures
+copilot/agent.py      Tool-calling loop: step limit, errors fed back to the model, every call logged to JSONL
+agent_cli.py          Ask the agent a question (add --trace to see each tool call)
+eval/agent_scenarios.jsonl  10 scenarios with known answers (incl. an unknown branch and a delete request)
+eval/run_agent_eval.py      Scores a real model on those scenarios and checks the database is unchanged
+tests/test_m2.py      19 offline tests with a scripted fake model
+```
+
+### The tools
+
+| Tool | What it answers |
+|---|---|
+| `find_products(query)` | "What's the SKU for long-life milk?" |
+| `get_stock(sku, branch)` | Stock on hand, value, average daily sales, **days of cover** |
+| `stockout_risk(branch, max_days_cover, department)` | What runs out soon, most urgent first |
+| `sales_summary(branch, days, sku)` | Units and value sold in the last N days |
+| `open_purchase_orders(branch, sku)` | Open POs, with an **overdue** flag |
+| `search_sops(query)` | The M1 retriever as a tool — the agent decides when policy matters |
+| `calculate(expression)` | Exact arithmetic (no `eval()`) |
+| `run_sql(sql)` | Last resort: one read-only `SELECT`, max 50 rows |
+
+### Read-only by construction, not by politeness
+
+Telling a model "please don't delete anything" is a suggestion. M2 makes writes impossible in code:
+
+1. **The database is opened with SQLite `mode=ro`.**
+2. **An authorizer callback denies every action except reading** — so even `WITH x AS (SELECT 1) DELETE FROM stock` fails.
+3. **`run_sql` accepts one `SELECT` and returns at most 50 rows.**
+4. **Errors are helpful.** Ask for "Mumbai" and the tool replies with the list of valid branches, so the agent can correct itself.
+
+The tests try `DELETE`, `UPDATE`, `DROP`, `ATTACH`, `PRAGMA`, stacked statements and a CTE-wrapped delete. All are blocked.
+
+### Every move is logged
+
+Each tool call is appended to `logs/tool_calls.jsonl`:
+
+```json
+{"run_id": "20261028T101500123456", "step": 2, "tool": "get_stock",
+ "args": "{\"sku\": \"1001\", \"branch\": \"Kitwe\"}", "ok": true, "ms": 1.8,
+ "result_preview": "{\"sku\": \"1001\", \"name\": \"Long-life milk 1L\", \"qty_on_hand\": 12, ...}"}
+```
+
+When an answer is wrong, the log tells you whether the model picked the wrong tool, passed the wrong arguments, or misread a correct result.
+
+### Story in the data
+
+The generated data has a few planted situations for the agent to find. At Kitwe, white bread is at **0** and long-life milk has **12 units (0.3 days of cover)**. The milk order **PO0025** was due on 24 October and is **overdue**.
+
+### Run it
+
+```bash
+python make_data.py                      # optional: store.db is already committed
+python agent_cli.py --trace "Which items will run out at Kitwe in the next 3 days?"
+python -m eval.run_agent_eval            # scores your model on the 10 scenarios
+pytest -q                                # 26 offline tests (M1 + M2)
+```
+
+Tool calling needs a model that supports it, e.g. `llama3.1:8b` or `qwen2.5:7b` in Ollama.
+
+**Agent eval results:** not measured yet. My build environment has no access to a model server, so the logic is covered by offline tests with a scripted fake model. Run `python -m eval.run_agent_eval` with your model, and the table in `eval/agent_results.md` will show passes, tools used, steps and tokens.
 
 ## License
 
