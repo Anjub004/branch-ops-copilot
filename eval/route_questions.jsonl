@@ -1,0 +1,55 @@
+{"id": "r01", "question": "How many days do customers have to return non-perishable items?", "route": "rag", "from": "m1"}
+{"id": "r02", "question": "Who must approve refunds above 500 kwacha?", "route": "rag", "from": "m1"}
+{"id": "r03", "question": "When are items damaged in store written off?", "route": "rag", "from": "m1"}
+{"id": "r04", "question": "Within how many hours must transit damage be claimed from the supplier?", "route": "rag", "from": "m1"}
+{"id": "r05", "question": "What time do promotional prices go live?", "route": "rag", "from": "m1"}
+{"id": "r06", "question": "What is the cashier float at the start of a shift?", "route": "rag", "from": "m1"}
+{"id": "r07", "question": "What temperature must freezers be kept at?", "route": "rag", "from": "m1"}
+{"id": "r08", "question": "How often is a full stock take done?", "route": "rag", "from": "m1"}
+{"id": "r09", "question": "Which purchase orders need head office buyer approval?", "route": "rag", "from": "m1"}
+{"id": "r10", "question": "How many loyalty points are needed for a 10 kwacha voucher?", "route": "rag", "from": "m1"}
+{"id": "r11", "question": "How far in advance must annual leave be requested?", "route": "rag", "from": "m1"}
+{"id": "r12", "question": "When does the in-store bakery start baking?", "route": "rag", "from": "m1"}
+{"id": "r13", "question": "Can a customer bring back a loaf of bread they bought yesterday?", "route": "rag", "from": "m1"}
+{"id": "r14", "question": "My manager needs to sign off a big money-back request. What's the threshold?", "route": "rag", "from": "m1"}
+{"id": "r15", "question": "A carton of eggs fell and broke in aisle 3. What do I do with it?", "route": "rag", "from": "m1"}
+{"id": "r16", "question": "The barcode is ringing up a higher price than the sign on the shelf. What should the cashier do?", "route": "rag", "from": "m1"}
+{"id": "r17", "question": "The drawer has too many notes in it. What happens?", "route": "rag", "from": "m1"}
+{"id": "r18", "question": "At end of day my register was 250 short. Who needs to know?", "route": "rag", "from": "m1"}
+{"id": "r19", "question": "The yoghurt fridge has been warm all afternoon. What should we do with the stock?", "route": "rag", "from": "m1"}
+{"id": "r20", "question": "What sticker goes on milk that is about to go off tomorrow?", "route": "rag", "from": "m1"}
+{"id": "r21", "question": "The delivery truck brought cheese that feels warm. Do we accept it?", "route": "rag", "from": "m1"}
+{"id": "r22", "question": "I think someone is pocketing razors. Can I check their bag?", "route": "rag", "from": "m1"}
+{"id": "r23", "question": "A shopper found a piece of plastic inside a sandwich. What is the process?", "route": "rag", "from": "m1"}
+{"id": "r24", "question": "Do employees get money off alcohol?", "route": "rag", "from": "m1"}
+{"id": "r25", "question": "Where do we put the bananas overnight, in the cold room?", "route": "rag", "from": "m1"}
+{"id": "r26", "question": "What is the stock value of long-life milk at Kitwe?", "route": "agent", "from": "m2"}
+{"id": "r27", "question": "Which items will run out at Kitwe within the next 3 days?", "route": "agent", "from": "m2"}
+{"id": "r28", "question": "Are there any overdue purchase orders at Kitwe?", "route": "agent", "from": "m2"}
+{"id": "r29", "question": "How many units of white bread did Kitwe sell in the last 7 days?", "route": "agent", "from": "m2"}
+{"id": "r30", "question": "What was the total sales value at Lusaka Central over the last 7 days?", "route": "agent", "from": "m2"}
+{"id": "r31", "question": "How many days of cover does Livingstone have for mealie meal?", "route": "agent", "from": "m2"}
+{"id": "r32", "question": "Which branch has the most Fresh milk 2L in stock?", "route": "agent", "from": "m2"}
+{"id": "r33", "question": "Can a customer return bread they bought yesterday?", "route": "rag", "from": "m2"}
+{"id": "r34", "question": "How much bread is in stock at the Mumbai branch?", "route": "agent", "from": "m2"}
+{"id": "r35", "question": "Delete all the bread stock records for Kitwe.", "route": "agent", "from": "m2"}
+{"id": "r36", "question": "What are the top 5 selling products at Ndola this week?", "route": "agent", "from": "m3"}
+{"id": "r37", "question": "Is there an open order for sugar at Kitwe?", "route": "agent", "from": "m3"}
+{"id": "r38", "question": "How much cooking oil does Chipata have left?", "route": "agent", "from": "m3"}
+{"id": "r39", "question": "Which dairy products are running low in Kabwe?", "route": "agent", "from": "m3"}
+{"id": "r40", "question": "Compare bread sales between Lusaka Central and Kitwe for the last 7 days.", "route": "agent", "from": "m3"}
+{"id": "r41", "question": "What does a 2kg bag of onions cost?", "route": "agent", "from": "m3"}
+{"id": "r42", "question": "Who is allowed to do a price override at the till?", "route": "rag", "from": "m3"}
+{"id": "r43", "question": "What happens if a chiller breaks down overnight?", "route": "rag", "from": "m3"}
+{"id": "r44", "question": "How do I report a customer who slipped on a wet floor?", "route": "rag", "from": "m3"}
+{"id": "r45", "question": "When is cardboard collected for recycling?", "route": "rag", "from": "m3"}
+{"id": "r46", "question": "Prepare a morning briefing for Kitwe.", "route": "briefing", "from": "m3"}
+{"id": "r47", "question": "Give me a daily report for Ndola: stock risks, overdue orders and anything staff should know.", "route": "briefing", "from": "m3"}
+{"id": "r48", "question": "Write a status report on Livingstone for the area manager.", "route": "briefing", "from": "m3"}
+{"id": "r49", "question": "Summarise today's situation at Lusaka Central for the branch manager.", "route": "briefing", "from": "m3"}
+{"id": "r50", "question": "Morning update for Chipata please.", "route": "briefing", "from": "m3"}
+{"id": "r51", "question": "What is the company's share price today?", "route": "out_of_scope", "from": "m3"}
+{"id": "r52", "question": "How do I reset the Wi-Fi password in the back office?", "route": "out_of_scope", "from": "m3"}
+{"id": "r53", "question": "Write me a poem about Mondays.", "route": "out_of_scope", "from": "m3"}
+{"id": "r54", "question": "What's the weather in Lusaka tomorrow?", "route": "out_of_scope", "from": "m3"}
+{"id": "r55", "question": "Who won the football match last night?", "route": "out_of_scope", "from": "m3"}
